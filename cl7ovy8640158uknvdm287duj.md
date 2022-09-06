@@ -202,7 +202,7 @@ Here we end up with the creation of OpenSearch. Back to the code (finally).
 
 We must provide the authentication data to connect to our OpenSearch cluster. Putting this directly in code is a terrible decision. Never do it. It would be best if you used secret stores or environment variables.
 
-We will now create a *.env* file in our project directory. You will fill it with the cluster address, the admin username, and the password. Remember to paste the server without the scheme(HTTPS or HTTP) and the port. These are extra parameters for haystack OpenSearchDocumentStore.
+We will now create a *.env* file in our project directory. You will fill it with the cluster address, the admin username, and the password. Remember to paste the server without the scheme (HTTPS or HTTP) and the port. These are extra parameters for haystack OpenSearchDocumentStore.
 
 
 ```
@@ -410,11 +410,11 @@ This time our response will come with all three of the documents that we have ad
 [{"content":"FastAPI is a modern, fast (high-performance), web framework for building APIs with Python 3.6+ based on standard Python type hints.","content_type":"text","id":"5209b538869b938ac94bf70fa0b09bd","meta":{"name":"FastAPI"},"score":null,"embedding":null},{"content":"Build production-ready NLP services.  deepset Cloud is a SaaS platform to build natural language processing applications.","content_type":"text","id":"4985f3369c9c9c6a6ba179a004b0af72","meta":{"name":"deepset Cloud"},"score":null,"embedding":null},{"content":"Haystack is an open-source framework for building search systems that work intelligently over large document collections.","content_type":"text","id":"e41e6aeb0ae5965a912b672664e58b7c","meta":{"name":"My first haystack document"},"score":null,"embedding":null}]
 ```
 
-There is one crucial thing that you must always pay attention to. **Never**, never in any production return all entities into a single call, it may be on HTTP, GRPC, SQL query. Please, never do this! It's a horrible practice. Instead, you should use *pagination techniques*. 
+There is one crucial thing that you must always pay attention to. **Never**, never in any production return all entities into a single call, be it on HTTP, GRPC, SQL query. Please, never do this! It's a horrible practice. We only permitted this here because we knew that only three documents existed in the index. But imagine the damage you would cause to your servers if you had 10 million documents! 
 
-We only permitted this here because we knew that only three documents existed in the index. But imagine the damage you would cause to your servers if you had 10 million documents! 
+Instead, you should use *pagination techniques*. Fortunately for us, haystack comes to the rescue here - the `get_all_documents()` function that we used has a default batch_size of 10000, meaning that that's the maximum amount of documents that will be returned if we don't otherwise set it. Likewise, there are [default batch_sizes set](https://github.com/deepset-ai/haystack/pull/2958/files) throughout the haystack code to prevent any catastrophes from happening.
 
-However, haystack comes to the rescue here - the `get_all_documents()` function that we used has a default batch_size of 10000, meaning that that's the maximum amount of documents that will be returned if we don't otherwise set it. Likewise, there are [default batch_sizes set](https://github.com/deepset-ai/haystack/pull/2958/files) throughout the haystack code to prevent any catastrophes from happening.
+
 
 ***NOTE TO DANIEL - I tried using batch_size values such as 1 or 2, and it returned all of them. Why? Is there a bug in the mechanism?***
 
