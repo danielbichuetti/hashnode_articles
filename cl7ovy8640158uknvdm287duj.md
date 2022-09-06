@@ -294,7 +294,7 @@ def save_document(document: Document):
 We test the endpoint:
 
 ```curl
-curl -X POST 'http://localhost:8000/documents/' -H 'Content-Type: application/json' -d '{"name":"My first haystack document", "content":"Haystack is an open-source framework for building search systems that work intelligently over large document collections."}'
+curl -X POST http://localhost:8000/documents/ -H 'Content-Type: application/json' -d '{"name":"My first haystack document", "content":"Haystack is an open-source framework for building search systems that work intelligently over large document collections."}'
 ```
 
 We didn't get a response!
