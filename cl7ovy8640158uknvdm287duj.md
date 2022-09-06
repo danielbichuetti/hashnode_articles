@@ -424,34 +424,6 @@ Instead, you should use *pagination techniques*. Fortunately for us, haystack co
 
 ***NOTE TO DANIEL - I tried using batch_size values such as 1 or 2, and it returned all of them. Why? Is there a bug in the mechanism?***
 
-We could also add our own mechanism to the code to limit how many documents are returned. See the new `else:` statement here that looks through 
-
-```python
-
-LIMIT_DOCUMENTS = os.getenv("LIMIT_DOCUMENTS")
-
-@app.get("/documents/", status_code=200)
-def get_all_document(response: Response):
-    document_store = get_document_store()
-    documents = document_store.get_all_documents(batch_size=1)
-    if documents is None:
-        response.status_code = 404
-        return {"error": "Documents not found"}
-    else:
-        count = 0
-        final_result = list()
-        for doc in documents:
-            final_result.append(doc)
-            count += 1
-            if count == int(LIMIT_DOCUMENTS):
-                break
-    return final_result
-
-```
-And then add this to our `.env` file:
-`LIMIT_DOCUMENTS=2`
-
-This will limit the number of documents that are returned to 2, or whatever value you set it as
 
 ### Querying the Document Store directly
 
