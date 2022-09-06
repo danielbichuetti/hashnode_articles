@@ -1,8 +1,6 @@
 ## NLP endpoints: Haystack plus FastAPI
 
-
-
-In this article, we will build together a **FastAPI application** which interacts with **haystack**. It's an experiment intended to be a starting point for anyone wishing to use haystack as a service for other projects. And one of the easiest ways is through a REST API.
+In this article, we will build a **FastAPI application** which interacts with **haystack**. It's an experiment intended to be a starting point for anyone wishing to use haystack as a service for other projects. And one of the easiest ways is through a REST API.
 You can deploy a REST API into a physical machine, a virtual machine, a container, or a serverless environment (like AWS Lambda or Azure Functions).
 
 Let's code.
@@ -11,15 +9,18 @@ Let's code.
 
 Everybody loves Python! 
 
-Who doesn't get amazed to "talk with the code"? When coding in Python, I feel like talking to my computer. For someone coding since when I was 12yo, you may understand my passion. 
+Who doesn't get amazed to "talk with the code"? When coding in Python in particular, I feel like I'm talking to my computer. For someone coding since when I was 12yo, you may understand my passion. 
 
-Python has thousands of available modules, and each day more come up. When you need something, look for it deeper on PyPi. It's hard not to find something. But this reminds me of one of the most famous sentences in a movie: *"With great power comes great responsibility."* If we keep installing modules into a mixed environment, we are building the path for considerable problems in the dependency chain, testing, and organization. The recommended way is to use **isolated environments**, which can be achieved by [python-venv](https://docs.python.org/3/library/venv.html).
+Python has thousands of available modules, and each day more become available. When you need something, look for it on http://pypi.org/. It's hard not to find something useful there! But this reminds me of one of the most famous sentences in a movie: *"With great power comes great responsibility."* If we keep installing modules into a mixed environment, we are laying the groundwork for considerable future problems in the dependency chain, testing, and organization. The recommended way is to use **isolated environments**, which can be achieved by using [python-venv](https://docs.python.org/3/library/venv.html). Note, you might consider the use of dependency managers such as [Poetry](https://python-poetry.org/) or [PDM](https://pdm.fming.dev/) - there are plenty of articles around the web that describe why and how you might use them. 
 
 ### Create a new environment.
 
 ```python
 python3 -m venv venv
 ``` 
+
+
+
 
 ### Activate the virtual environment.
 
@@ -28,11 +29,12 @@ source venv/bin/activate
 ``` 
 
 
-## Install haystack
+### Install haystack
 
 Now we install the outstanding **[haystack](https://haystack.deepset.ai)** NLP framework. 
 
-We use [OpenSearch](https://opensearch.org/) as our Document Store. For this, we set the egg *opensearch* to instruct pip to install its related dependencies together with the framework.
+We are using [OpenSearch](https://opensearch.org/) as our Document Store. For this, we set the egg *opensearch* to instruct pip to install its related dependencies together with the framework. You can find the appropriate commands for using different Document Stores [here](https://github.com/deepset-ai/haystack/blob/e1f399284fad6a5f04d7d95bcccc3056ddac03b1/pyproject.toml#L97). If you just want to use Elasticsearch, then remove the egg altogether.
+
 
 ```
 pip install fastapi
@@ -45,11 +47,13 @@ pip install fastapi
 touch app.py
 ```
 
+Here is the https://github.com/danielbichuetti/haystack_fastapi_endpoint/blob/main/app.py of this file for your reference. But it would be very beneficial for you to follow along and build the application step-by-step.
+
 ### The health-check endpoint
 
- First, exposing a health-check endpoint is a good practice. But what is a health-check endpoint?
+First, it is good practice to expose a health-check endpoint. But what is a health-check endpoint?
 
- It's a route that tells external systems the current status of your application. For example, normal states are running correctly (green), partially (yellow), or not running correctly (red). Some providers can check this endpoint to know if your app is running correctly and doesn't need a restart. It's also useful by allowing you to set up alarms in monitoring tools.
+It's a route that tells external systems the current status of your application. For example, normal states are running correctly (green), partially (yellow), or not running correctly (red). Some providers can check this endpoint to know if your app is running correctly and doesn't need a restart. It's also useful by allowing you to set up alarms in monitoring tools.
 
 ```python
 from fastapi import FastAPI
@@ -61,11 +65,11 @@ def health():
     return {"status": "ok"}
 ```
 
-This code isn't doing extended checks and returning possible warnings (yellow reasons) or errors (red reasons). But a production API really should. It's a starting point, and what it should return when not working is tightened to each application and business.
+This code isn't doing extended checks and returning possible warnings (yellow reasons) or errors (red reasons). But a production API really should. It's a starting point, and what it should return when not working should be evaluated on a case-by-case basis for each application and business.
 
 ### Async capabilities
 
-Besides using a usual definition, which is synchronous, FastAPI also supports asynchronous methods. In IO-heavy applications, asynchronous code is critical to avoid bottlenecks and improve performance. Therefore, you need to add **async** into your method definition.
+Besides offer the typical synchronous connection methods, FastAPI also supports asynchronous methods. This allows the application to carry-on with other tasks in its queue while it waits for an external process to complete. In IO-heavy applications, asynchronous code is critical to avoid bottlenecks and improve performance. Therefore, you need to add **async** into your method definition.
 
 
 ```python
@@ -80,7 +84,7 @@ async def health():
 
 ### Running your FastAPI application
 
-Ok, you may be thinking now about how you run this application. Probably, you are considering calling "python  app.py", right? But, no, FastAPI is a framework, not a server. Therefore, you must use something else. Here is where [uvicorn](https://www.uvicorn.org/) is helpful. There is also [gunicorn](https://gunicorn.org/), a WSGY server, but this is for another article. 
+Ok, now you may be thinking about how to actually run this application. Perhaps you are considering calling "python  app.py"? But, no, FastAPI is a framework, not a server. Therefore, you must use something else. Here is where [uvicorn](https://www.uvicorn.org/) is helpful. There is also [gunicorn](https://gunicorn.org/), a WSGY server, but this is for another article. 
 
 Install it.
 
@@ -95,10 +99,10 @@ From the command line, you can now run:
 uvicorn app:app --reload
 ```
 
-The first *app* is the python filename without the extension, and the second is the FastAPI *App object*. The reload option will make uvicorn reload the file whenever it's changed. Use this only when developing if you like real-time updates.
+The first *app* is the python filename without the extension, and the second is the FastAPI *App object*. The reload option will make uvicorn reload the file whenever it's changed. Only use this while developing in order to have the server automatically reload when you make changes to the app.py file.
 
 
-It will start at the default port, 8000. So you should see on the command line something like:
+It will start on the default port, 8000. So you should see something like this on the command line:
 
 ```
 INFO:     Will watch for changes in these directories: ['/home/danielbichuetti/Dev/Projects/fastapi_haystack']
@@ -115,13 +119,13 @@ INFO:     Application startup complete.
 curl http://localhost:8000/health
 ```
 
-The response must be:
+The response should be:
 
 ```
 {"status":"ok"}
 ```
 
-Yeah, it's a JSON string. Pretty easy to build a REST API, right? It's just a tiny amount of FastAPI power. It's straightforward and fast.
+Yeah, it's a JSON string. Pretty easy to build a REST API, right? Its very straightforward and fast to configure, because FastAPI handles the rest.
 
 ## Deploy an OpenSearch cluster
 
@@ -131,7 +135,7 @@ Do you have any OpenSearch servers available? If yes, you can jump to the next s
 
 Go to [AWS console](https://signin.aws.amazon.com/signin) portal and log in. If you are not a user yet, please [sign up](https://portal.aws.amazon.com/gp/aws/developer/registration/index.html?refid=c623d581-46f6-43a2-b227-cabbee9cd673) for a free account. 
 
-They provide Amazon OpenSearch Service on their free tier. So yeah, 750 hours of **t3.small.search** instance monthly. It's a good starting point.
+AWS provides Amazon OpenSearch Service on their free tier. So yeah, 750 hours of **t3.small.search** instance monthly. It's a good starting point.
 
 After you have logged in, find [Amazon OpenSearch Service](https://us-east-1.console.aws.amazon.com/opensearch). Then click on *Create Domain*
 
@@ -148,12 +152,12 @@ Choose the Deployment type, Development and testing, and select 1.3 (latest) as 
 ![Screenshot from 2022-09-04 15-11-23.png](https://cdn.hashnode.com/res/hashnode/image/upload/v1662315092919/RNYk4t9Lk.png align="left")
 
 Let's tweak some default Data nodes options to keep setup simple and use just the free tier.
-First, let's use only **1 AZ**, and change the **Number of nodes** to **1**. On **Instance Type**, change to **t3.small.search**. Don't change the EBS size to more than 20GB, as it's the maximum allowed for free.
+First, let's use only **1 AZ**, and change the **Number of nodes** to **1**. On **Instance Type**, change it to **t3.small.search**. Don't change the EBS size to more than 20GB, as it's the maximum allowed for free.
 
 
 ![Screenshot from 2022-09-04 15-17-10.png](https://cdn.hashnode.com/res/hashnode/image/upload/v1662315439686/AuhiOOKJ7.png align="left")
 
-Scroll down until you get to the **Network** part. Usually, this is a bad idea without further tuning and control. However, for an experiment, it will be ok. We will use **Public access** for the network, which means *we exposed our cluster endpoints to the Internet*.
+Scroll down until you get to the **Network** part. Usually, this is a bad idea without further tuning and control. However, for this experiment, it will be ok. We will use **Public access** for the network, which means *we exposed our cluster endpoints to the Internet*.
 
 
 ![Screenshot from 2022-09-04 15-18-47.png](https://cdn.hashnode.com/res/hashnode/image/upload/v1662315533432/rflTcTdTA.png align="left")
@@ -163,7 +167,7 @@ Because we exposed OpenSearch to the Internet, set up at least an **admin user**
 
 ![Screenshot from 2022-09-04 15-23-42.png](https://cdn.hashnode.com/res/hashnode/image/upload/v1662315830661/JaXxm7R6J.png align="left")
 
-For a more straightforward setup and to avoid extensive configuration, let's **turn off domain access policies** and use just fine-grained access control. **Avoid this on production**. 
+For a more straightforward setup and to avoid extensive configuration, let's **turn off domain access policies** and just use fine-grained access control. **Avoid this on production**. 
 
 
 ![Screenshot from 2022-09-04 15-25-22.png](https://cdn.hashnode.com/res/hashnode/image/upload/v1662315939281/iS-nTTYGa.png align="left")
@@ -171,7 +175,7 @@ For a more straightforward setup and to avoid extensive configuration, let's **t
 
 Now hit the Create button on the bottom of the page and wait.
 
-You'll see a page with loading information, like this one. It shows the steps of the cluster creation process. You will have to wait some minutes.
+You'll see a page with loading information, like this one. It shows the steps of the cluster creation process. You will have to wait a few minutes.
 
 
 ![Screenshot from 2022-09-04 15-27-09.png](https://cdn.hashnode.com/res/hashnode/image/upload/v1662316104372/cewhvyfHo.png align="left")
@@ -198,11 +202,11 @@ Here we end up with the creation of OpenSearch. Back to the code (finally).
 
 ## Refactoring the application
 
-### The environments values
+### The environment values
 
 We must provide the authentication data to connect to our OpenSearch cluster. Putting this directly in code is a terrible decision. Never do it. It would be best if you used secret stores or environment variables.
 
-We will now create a *.env* file in our project directory. You will fill it with the cluster address, the admin username, and the password. Remember to paste the server without the scheme (HTTPS or HTTP) and the port. These are extra parameters for haystack OpenSearchDocumentStore.
+We will now create a *.env* file in our project directory. You will fill it with the cluster address, the admin username, and the password. Remember to paste the server address without the scheme (HTTPS or HTTP), as well as the port. These are extra parameters for haystack OpenSearchDocumentStore.
 
 
 ```
@@ -218,9 +222,10 @@ We will install a library to help load environment variables during development.
 pip install python-dotenv
 ```
 
-On your app.py file, add. 
+In your app.py file, add. 
 
 ```
+import os
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -230,7 +235,7 @@ OPENSEARCH_USER = os.getenv("OPENSEARCH_USER")
 OPENSEARCH_PASSWORD = os.getenv("OPENSEARCH_PASSWORD")
 ```
 
-The variables from the environment will get loaded, but before, dotenv will check whether they are present or not. If not, it will use the .env data.
+The variables from the environment will get loaded, but before that, dotenv will check whether they are present or not. If not, it will use the .env data.
 
 
 
@@ -253,7 +258,7 @@ There are other parameters and ways of fine-tuning this initialization; you can 
 
 ### Data validation
 
-Valid data in a REST endpoint is a need. We don't want anyone sending invalid data to our endpoints. So we will use data validation then.
+Valid data in a REST endpoint is a need. We don't want anyone sending invalid data to our endpoints. Therefore, we will use data validation.
 
 Let's define a model for the requests made to our endpoints. First, we will send documents, which will be JSON documents with content and a name.
 
@@ -266,18 +271,21 @@ pip install pydantic
 Then we will declare the new class:
 
 ```
+from pydantic import BaseModel
+from typing import Optional
+
 class Document(BaseModel):
     name: Optional[str] = None
     content: str
 ```
 
-Here there is an important point. Take care with naming classes on your project to avoid overwriting other classes. You can see I used Document. But then I remembered one of the most critical [primitives in haystack](https://haystack.deepset.ai/reference/primitives): Document. Like Labels and Answers, it's a pillar of it. So we will use an alias on the import like this: 
+Here there is an important point to take note of. Take care with naming classes on your project to avoid overwriting other classes. You can see I used Document. But then I remembered one of the most critical [primitives in haystack](https://haystack.deepset.ai/reference/primitives): Document. Like Labels and Answers, it's a pillar of it. So we will use an alias on the import like this: 
 
 ```
 from haystack.schema import Document as HaystackDocument
 ```
 
-Let's keep the alias to avoid overwriting it while still getting in touch with the best NLP framework.
+Let's keep the alias to avoid overwriting Document while still getting in touch with the best NLP framework.
 
 ### Add a document
 
@@ -568,17 +576,3 @@ Haystack's capabilities are very extensive, covering almost all possible usages 
 - Join the [Discord server](https://discord.com/invite/VBpFzsgRVF).
 
 I'm always around haystack on Discord and would be pleased to talk there.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
