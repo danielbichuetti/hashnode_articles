@@ -322,7 +322,7 @@ curl -X 'POST' \
 }'
 ```
 
-If we inspect closely, we can see that the url differs *slightly* from the one we used - there isn't any trailing slash after `documents`
+If we inspect closely, we can see that the url differs *slightly* from the one we used --- there isn't any trailing slash after `documents`
 
 Typically a trailing slash is used to denote a resource group, while a URL without a slash names a specific resource. Since we are targeting a specific endpoint, let's remove that slash and try again.
 
