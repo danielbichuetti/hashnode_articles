@@ -65,7 +65,7 @@ def health():
     return {"status": "ok"}
 ```
 
-This code isn't doing extended checks and returning possible warnings (yellow reasons) or errors (red reasons). But a production API really should. It's a starting point, and what it should return when not working should be evaluated on a case-by-case basis for each application and business.
+In a production setting, we should be doing extended checks and returning possible warnings (yellow reasons) or errors (red reasons). But this is just an experiment and a starting point. What should be returned in production should be evaluated on a case-by-case basis for each application and business.
 
 ### Async capabilities
 
