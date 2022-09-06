@@ -294,25 +294,60 @@ def save_document(document: Document):
 We test the endpoint:
 
 ```curl
-curl -X POST http://localhost:8000/documents/ -H 'Content-Type: application/json' -d '{"name":"My first haystack document", "content":"Haystack is an open-source framework for building search systems that work intelligently over large document collections."}'
+curl -X POST 'http://localhost:8000/documents/' -H 'Content-Type: application/json' -d '{"name":"My first haystack document", "content":"Haystack is an open-source framework for building search systems that work intelligently over large document collections."}'
 ```
 
-Wow, that was easy and fast! You should see this response:
+We didn't get a response!
+
+Let's take a look at the Uvicorn log that should be running in your console:
+
+`INFO:     127.0.0.1:35134 - "POST /documents/ HTTP/1.1" 307 Temporary Redirect`
+
+It seems that it is connecting, however the redirect doesn't seem correct.
+
+Lets check the syntax. FastAPI has a built-in mechanism called Swagger and you can check and test the syntax for all of your defined endpoints if you visit http://localhost:8000
+
+![msedge_8R1RzsEXeg](https://user-images.githubusercontent.com/88559987/188543512-44412dcf-cdbc-40ca-a084-e5c400475b31.gif)
+
+This generated the following curl request: 
+
+```
+curl -X 'POST' \
+  'http://localhost:8000/documents' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "string",
+  "content": "string"
+}'
+```
+
+If we inspect closely, we can see that the url differs *slightly* from the one we used - there isn't any trailing slash after `documents`
+
+Typically a trailing slash is used to denote a resource group, while a URL without a slash names a specific resource. Since we are targeting a specific endpoint, let's remove that slash and try again.
+
+```curl
+curl -X 'POST' 'http://localhost:8000/documents' -H 'Content-Type: application/json' -d '{"name":"My first haystack document", "content":"Haystack is an open-source framework for building search systems that work intelligently over large document collections."}'
+```
+
+Voila! That was easy and fast! You should see a response like this:
 
 ```
 {"id":"e41e6aeb0ae5965a912b672664e58b7c"}
 ```
 
-It's the id that haystack generated for your document. We are returning it.
+It's the id that haystack generated for your document. Let's copy that somewhere for future use.
 
 
 ### Get a document
 
-What if we want to get this document?
+What if we want to retrieve this document from the datastore?
 
 Let's build an endpoint to read a document by its id:
 
 ```python
+from fastapi import Response
+
 @app.get("/documents/{document_id}", status_code=200)
 def get_document(document_id: str, response: Response):
     document = document_store.get_document_by_id(document_id)
@@ -322,7 +357,7 @@ def get_document(document_id: str, response: Response):
     return document_store.get_document_by_id(document_id)
 ```
 
-We are trying to get the document from haystack OpenSearchDocumentStore; if there is not a document with this id, we will return a 404 HTTP response code with an error message. On the other hand, you will get a 200 HTTP response code with the document if it exists.
+We are trying to get the document from haystack OpenSearchDocumentStore. If there isn't a document with this id, you will receive a 404 HTTP response code along with an error message. On the other hand, if the document exists, you will receive a 200 HTTP response code with the document.
 
 ```curl
 curl http://localhost:8000/documents/e41e6aeb0ae5965a912b672664e58b7c
@@ -334,23 +369,24 @@ Our response will have a bit more information than what we first sent to create 
 {"content":"Haystack is an open-source framework for building search systems that work intelligently over large document collections.","content_type":"text","id":"e41e6aeb0ae5965a912b672664e58b7c","meta":"name":"My first haystack document"},"score":0.5312093733737563,"embedding":null}
 ```
 
-The Document primitive of haystack documentation is [here](https://haystack.deepset.ai/reference/primitives#document). You will get a better understanding of each field there. 
-By the way, the haystack documentation is pretty complete. Expend some time there. It will be a pleasant learning time.
+You can learn more about haystack's Document primitive [here](https://haystack.deepset.ai/reference/primitives#document).
+
+By the way, the haystack documentation is very comprehensive - it not only covers the technical details of the API, but also offers a lot of background information, Tutorials and other Guides. Spend some time there -- you will quickly learn about the immense possibilities that Haystack opens you up to!
 
 
 ### Add more documents
 
 ```curl
-curl -X POST http://localhost:8000/documents/ -H 'Content-Type: application/json' -d '{"name":"deepset Cloud", "content":"Build production-ready NLP services.  deepset Cloud is a SaaS platform to build natural language processing applications."}'
+curl -X POST http://localhost:8000/documents -H 'Content-Type: application/json' -d '{"name":"deepset Cloud", "content":"Build production-ready NLP services.  deepset Cloud is a SaaS platform to build natural language processing applications."}'
 ```
 
 ```curl
-curl -X POST http://localhost:8000/documents/ -H 'Content-Type: application/json' -d '{"name":"FastAPI", "content":"FastAPI is a modern, fast (high-performance), web framework for building APIs with Python 3.6+ based on standard Python type hints."}'
+curl -X POST http://localhost:8000/documents -H 'Content-Type: application/json' -d '{"name":"FastAPI", "content":"FastAPI is a modern, fast (high-performance), web framework for building APIs with Python 3.6+ based on standard Python type hints."}'
 ```
 
 ### Get all documents
 
-Now, what if we want to get all documents?
+Now, what if we want to get all documents? Recall what we said about resource groups vs specific resources? Since we're trying to retrieve an entire group, let's use a trailing slash this time.
 
  ```python
 @app.get("/documents/", status_code=200)
@@ -362,30 +398,36 @@ def get_all_document(response: Response):
     return documents
 ```
 
-We can test:
+We can test this endpoint with the following:
 
 ```curl
 curl http://localhost:8000/documents/
 ```
 
-This time our response will come with all the three documents we have added.
+This time our response will come with all three of the documents that we have added.
 
 ```
 [{"content":"FastAPI is a modern, fast (high-performance), web framework for building APIs with Python 3.6+ based on standard Python type hints.","content_type":"text","id":"5209b538869b938ac94bf70fa0b09bd","meta":{"name":"FastAPI"},"score":null,"embedding":null},{"content":"Build production-ready NLP services.  deepset Cloud is a SaaS platform to build natural language processing applications.","content_type":"text","id":"4985f3369c9c9c6a6ba179a004b0af72","meta":{"name":"deepset Cloud"},"score":null,"embedding":null},{"content":"Haystack is an open-source framework for building search systems that work intelligently over large document collections.","content_type":"text","id":"e41e6aeb0ae5965a912b672664e58b7c","meta":{"name":"My first haystack document"},"score":null,"embedding":null}]
 ```
 
-There is one crucial thing that you must always pay attention. **Never**, never in any production return all entities into a single call, it may be on HTTP, GRPC, SQL query. Please, never do this! It's a horrible practice. Instead, you should use *pagination techniques*. 
+There is one crucial thing that you must always pay attention to. **Never**, never in any production return all entities into a single call, it may be on HTTP, GRPC, SQL query. Please, never do this! It's a horrible practice. Instead, you should use *pagination techniques*. 
 
-The example is shown just as a multi-document return because I knew only three documents existed. Imagine the damage you would cause to the servers if you had 10 million documents. 
+We only permitted this here because we knew that only three documents existed in the index. But imagine the damage you would cause to your servers if you had 10 million documents! 
+
+However, haystack comes to the rescue here - the `get_all_documents()` function that we used has a default batch_size of 10000, meaning that that's the maximum amount of documents that will be returned if we don't otherwise set it. Likewise, there are [default batch_sizes set](https://github.com/deepset-ai/haystack/pull/2958/files) throughout the haystack code to prevent any catastrophes from happening.
+
+***NOTE TO DANIEL - I tried using batch_size values such as 1 or 2, and it returned all of them. Why? Is there a bug in the mechanism?***
 
 
 ### Querying the Document Store directly
 
-We have handy nodes and pipelines on haystack. But you can run queries directly on your Document Store, even using [custom DSL queries](https://haystack.deepset.ai/reference/document-store#baseelasticsearchdocumentstore).
+Before we move on to the real power of haystack --- its nodes and pipelines --- we will test out one final mechanism: running [custom DSL queries](https://haystack.deepset.ai/reference/document-store#baseelasticsearchdocumentstore) directly on our Document Store.
 
 Let's set up a simple "search" endpoint. 
 
 ```
+import logging
+
 @app.get("/documents/search/{query}", status_code=200)
 def search_document(query: str, response: Response):
     logging.debug(f"Searching for {query}")
@@ -405,17 +447,15 @@ Our response will be:
 [{"content":"Build production-ready NLP services.  deepset Cloud is a SaaS platform to build natural language processing applications.","content_type":"text","id":"4985f3369c9c9c6a6ba179a004b0af72","meta":{"name":"deepset Cloud"},"score":0.508989096965447,"embedding":null}]
 ```
 
-You must keep in mind two things for this elementary search and query:
+You must keep two things in mind for this elementary search and query:
 
 1. There are only three documents in our Document Store
 2. SaaS keyword is present in only one document.
 3. The query is concise and limited
 
-If we had more documents with the keyword, the BM25 algorithm would help us with many answers and assign scores for each answer.
+If we had more documents with that search term, the BM25 algorithm would help us quickly retrieve and sort the matches by their relevance.
 
-So remember, haystack is much more potent than this. We are using a tiny piece of the framework, mostly related to primitives and Document Stores. There are outstanding nodes to explore.
-
-Furthermore, we could use a powerful filter on its haystack implementation. It would be something similar to:
+Haystack also has a powerful filtering mechanism, which would allow us to filter a more complex dataset across many dimensions:
 
 ```
 filters = {
@@ -433,6 +473,9 @@ filters = {
 
 Note: This filter doesn't apply to our current application, it's just an example to understand its logic.
 
+If we were to be embedding this into an existing Elasticsearch application that generates DSL JSON queries, we could also pass that query along to Haystack, which would then pass it along to the Document Store to be processed normally. Please see the [documentation](https://haystack.deepset.ai/reference/document-store#baseelasticsearchdocumentstore) to learn more about the possibilities.
+
+But haystack is much more powerful than this. So far we have only used a tiny piece of the framework - indexing and retrieving basic text documents. Now it is time to explore the outstanding power of haystack Nodes.
 
 ### Extractive answer endpoint
 
@@ -466,13 +509,13 @@ def ask_document(query: Query, response: Response):
 
 Let's talk a bit about this endpoint. 
 
-First, we are defining which model we will use. The company behind haystack, [deepset.ai](https://www.deepset.ai/), has made public some astonishing models on [Hugging Face](https://huggingface.co/deepset). You will find small, medium, and giant models. All of them have excellent quality. Please explore them. Oh, and don't forget to give them a like on Hugging Face. 
+First, we are defining which model we will use. The company behind haystack, [deepset.ai](https://www.deepset.ai/), has publicly shared many astonishing models on [Hugging Face](https://huggingface.co/deepset), which is the de facto respository and community for sharing ML NLP models. You will find small, medium, and giant models there and all of them have excellent quality, so please explore them. Oh, and don't forget to give Deepset a like on Hugging Face! 
 
-Then we have set up a BM25Retriever, which will do a sparse search for us. 
+Then we set up a BM25Retriever, which will do a sparse search - using just simple text keywords - for us. 
 
-After that, we set up the FARMReader (our friends also developed FARM at deepset, it's an excellent framework for transfer learning). 
+After that, we set up the FARMReader (our friends at deepset also developed FARM, it's an excellent framework for transfer learning). 
 
-We instantiate one of the [ready-made pipelines](https://haystack.deepset.ai/components/ready-made-pipelines). These pipelines fit the most common search patterns and chain haystack components. For example, the [ExtractiveQAPipeline](https://haystack.deepset.ai/components/ready-made-pipelines#extractiveqapipeline) searches the OpenSearch document collection and extracts a piece of text (a span) that answer our question.
+We instantiate one of the [ready-made pipelines](https://haystack.deepset.ai/components/ready-made-pipelines). These pipelines fit the most common search patterns and chain the appropriate haystack components together automatically. For example, the [ExtractiveQAPipeline](https://haystack.deepset.ai/components/ready-made-pipelines#extractiveqapipeline) searches the OpenSearch document collection and extracts a piece of text (a span) that answers our question.
 
 We call the endpoint:
 
@@ -480,8 +523,7 @@ We call the endpoint:
 curl -X POST http://localhost:8000/documents/ask -H 'Content-Type: application/json' -d '{"question":"What is deepset Cloud?"}'
 ```
 
-Running this for the first time will take some time because haystack will download the model from the Internet. Depending on the model, deepset/roberta-base-squad2 is about 480 MB, and your connection speed can take less or more. But it's a one-time download, as long as you don't clean the virtual environment. 
-
+When we access this endpoint for the first time, it will take a little while because haystack will need to download the model and then run it. The time will vary depending on the model (deepset/roberta-base-squad2 is about 480 MB) and your connection speed. But it's a one-time download, as long as you don't clean the virtual environment or change the model.
 
 On your command line, you will get something like:
 
@@ -491,20 +533,20 @@ On your command line, you will get something like:
 
 I would like to emphasize some fields of the haystack [Answer primitive](https://haystack.deepset.ai/reference/primitives#answer):
 
-- answer: this is the piece of text that answers your submitted question. It's an extracted text (on this pipeline), which means it's equal to how the answer is present in the document.
+- answer: this is the piece of text that answers your submitted question. It's an extracted text (on this pipeline), which means it is identical to how the answer is presented in the document (that we sent to OpenSearchDocumentStore).
 
-- score: it's the relevance of the answer.
+- score: the relevance, between 0 and 1, of the answer.
 
-- offsets_in_document: where in the document (sent to OpenSearchDocumentStore) the answer is located.
+- offsets_in_document: where in the document the answer is located.
 
-- document_id: the document id where the answer is present.
+- document_id: the id of the document in which the answer is present.
 
 
 ## The end (for today)
 
-Unfortunately, we have come to the end of this article. I want to share more, but keeping some topics separated now is better.
+Unfortunately, we have come to the end of this article. I would like to share much more, but it is better to keep the topics delineated 
 
-We have built a FastAPI application that provides endpoints for some sparse haystack retrievers. However, there is much more on haystack:
+We have built a FastAPI application that provides endpoints for some sparse haystack retrievers. However, there is much more to haystack:
 
 - Pre-processing
 - File converters
@@ -513,9 +555,9 @@ We have built a FastAPI application that provides endpoints for some sparse hays
 - Translators
 - Rankers
 - Classifiers
-- ...
+- and much more...
 
-The list is yet extensive and covers almost all possible NLP search usage. 
+Haystack's capabilities are very extensive, covering almost all possible usages of NLP search. 
 
 
 #### Useful **haystack** links
@@ -525,7 +567,7 @@ The list is yet extensive and covers almost all possible NLP search usage.
 - Join the [newsletter](https://haystack.deepset.ai/community/join)
 - Join the [Discord server](https://discord.com/invite/VBpFzsgRVF).
 
-I'm always around haystack on Discord. So I'll be pleased to talk there.
+I'm always around haystack on Discord and would be pleased to talk there.
 
 
 
