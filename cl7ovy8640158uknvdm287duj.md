@@ -92,7 +92,7 @@ pip install uvicorn[standard]
 From the command line, you can now run:
 
 ```
-uvicorn app:app --reload
+uvicorn app:app --reload --workers 1
 ```
 
 The first *app* is the python filename without the extension, and the second is the FastAPI *App object*. The reload option will make uvicorn reload the file whenever it's changed. Use this only when developing if you like real-time updates.
