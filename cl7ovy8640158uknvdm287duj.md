@@ -36,6 +36,15 @@ Now we install the outstanding **[haystack](https://haystack.deepset.ai)** NLP f
 We are using [OpenSearch](https://opensearch.org/) as our Document Store. For this, we set the egg *opensearch* to instruct pip to install its related dependencies together with the framework. You can find the appropriate commands for using different Document Stores [here](https://github.com/deepset-ai/haystack/blob/e1f399284fad6a5f04d7d95bcccc3056ddac03b1/pyproject.toml#L97). If you just want to use Elasticsearch, then remove the egg altogether.
 
 
+```python
+pip install farm-haystack[opensearch]
+``` 
+
+
+### Install FastAPI
+
+[FastAPI](https://fastapi.tiangolo.com/) is a great web framework for building APIs. We install it by running:
+
 ```
 pip install fastapi
 ```
