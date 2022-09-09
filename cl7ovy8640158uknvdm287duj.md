@@ -2,7 +2,7 @@
 
 
 
-In this article, we will build together a **FastAPI application** which interacts with **haystack**. It's an experiment intended to be a starting point for anyone wishing to use haystack as a service for other projects. And one of the easiest ways is through a REST API.
+In this article, we will build together a **FastAPI application** which interacts with **Haystack**. It's an experiment intended to be a starting point for anyone wishing to use haystack as a service for other projects. And one of the easiest ways is through a REST API.
 You can deploy a REST API into a physical machine, a virtual machine, a container, or a serverless environment (like AWS Lambda or Azure Functions).
 
 Let's code.
@@ -28,9 +28,9 @@ source venv/bin/activate
 ``` 
 
 
-## Install haystack
+## Install Haystack
 
-Now we install the outstanding **[haystack](https://haystack.deepset.ai)** NLP framework. 
+Now we install the outstanding framework **[Haystack](https://haystack.deepset.ai)** NLP framework. 
 
 We use [OpenSearch](https://opensearch.org/) as our Document Store. For this, we set the egg *opensearch* to instruct pip to install its related dependencies together with the framework.
 
@@ -202,7 +202,7 @@ Here we end up with the creation of OpenSearch. Back to the code (finally).
 
 We must provide the authentication data to connect to our OpenSearch cluster. Putting this directly in code is a terrible decision. Never do it. It would be best if you used secret stores or environment variables.
 
-We will now create a *.env* file in our project directory. You will fill it with the cluster address, the admin username, and the password. Remember to paste the server without the scheme(HTTPS or HTTP) and the port. These are extra parameters for haystack OpenSearchDocumentStore.
+We will now create a *.env* file in our project directory. You will fill it with the cluster address, the admin username, and the password. Remember to paste the server without the scheme(HTTPS or HTTP) and the port. These are extra parameters for Haystack OpenSearchDocumentStore.
 
 
 ```
@@ -236,7 +236,7 @@ The variables from the environment will get loaded, but before, dotenv will chec
 
 ### Initialize OpenSearchDocumentStore
 
-With this in hand, we can now initialize our haystack DocumentStore:
+With this in hand, we can now initialize our Haystack DocumentStore:
 
 ```
 document_store = OpenSearchDocumentStore(
@@ -271,7 +271,7 @@ class Document(BaseModel):
     content: str
 ```
 
-Here there is an important point. Take care with naming classes on your project to avoid overwriting other classes. You can see I used Document. But then I remembered one of the most critical [primitives in haystack](https://haystack.deepset.ai/reference/primitives): Document. Like Labels and Answers, it's a pillar of it. So we will use an alias on the import like this: 
+Here there is an important point. Take care with naming classes on your project to avoid overwriting other classes. You can see I used Document. But then I remembered one of the most critical [primitives in Haystack](https://haystack.deepset.ai/reference/primitives): Document. Like Labels and Answers, it's a pillar of it. So we will use an alias on the import like this: 
 
 ```
 from haystack.schema import Document as HaystackDocument
@@ -294,7 +294,7 @@ def save_document(document: Document):
 We test the endpoint:
 
 ```curl
-curl -X POST http://localhost:8000/documents/ -H 'Content-Type: application/json' -d '{"name":"My first haystack document", "content":"Haystack is an open-source framework for building search systems that work intelligently over large document collections."}'
+curl -X POST http://localhost:8000/documents/ -H 'Content-Type: application/json' -d '{"name":"My first Haystack document", "content":"Haystack is an open-source framework for building search systems that work intelligently over large document collections."}'
 ```
 
 Wow, that was easy and fast! You should see this response:
@@ -303,7 +303,7 @@ Wow, that was easy and fast! You should see this response:
 {"id":"e41e6aeb0ae5965a912b672664e58b7c"}
 ```
 
-It's the id that haystack generated for your document. We are returning it.
+It's the id that Haystack generated for your document. We are returning it.
 
 
 ### Get a document
@@ -322,7 +322,7 @@ def get_document(document_id: str, response: Response):
     return document_store.get_document_by_id(document_id)
 ```
 
-We are trying to get the document from haystack OpenSearchDocumentStore; if there is not a document with this id, we will return a 404 HTTP response code with an error message. On the other hand, you will get a 200 HTTP response code with the document if it exists.
+We are trying to get the document from Haystack OpenSearchDocumentStore; if there is not a document with this id, we will return a 404 HTTP response code with an error message. On the other hand, you will get a 200 HTTP response code with the document if it exists.
 
 ```curl
 curl http://localhost:8000/documents/e41e6aeb0ae5965a912b672664e58b7c
@@ -331,10 +331,10 @@ curl http://localhost:8000/documents/e41e6aeb0ae5965a912b672664e58b7c
 Our response will have a bit more information than what we first sent to create the endpoint:
 
 ```
-{"content":"Haystack is an open-source framework for building search systems that work intelligently over large document collections.","content_type":"text","id":"e41e6aeb0ae5965a912b672664e58b7c","meta":"name":"My first haystack document"},"score":0.5312093733737563,"embedding":null}
+{"content":"Haystack is an open-source framework for building search systems that work intelligently over large document collections.","content_type":"text","id":"e41e6aeb0ae5965a912b672664e58b7c","meta":"name":"My first Haystack document"},"score":0.5312093733737563,"embedding":null}
 ```
 
-The Document primitive of haystack documentation is [here](https://haystack.deepset.ai/reference/primitives#document). You will get a better understanding of each field there. 
+The Document primitive of Haystack documentation is [here](https://haystack.deepset.ai/reference/primitives#document). You will get a better understanding of each field there. 
 By the way, the haystack documentation is pretty complete. Expend some time there. It will be a pleasant learning time.
 
 
@@ -504,7 +504,7 @@ I would like to emphasize some fields of the haystack [Answer primitive](https:/
 
 Unfortunately, we have come to the end of this article. I want to share more, but keeping some topics separated now is better.
 
-We have built a FastAPI application that provides endpoints for some sparse haystack retrievers. However, there is much more on haystack:
+We have built a FastAPI application that provides endpoints for some sparse haystack retrievers. However, there is much more in Haystack:
 
 - Pre-processing
 - File converters
@@ -518,14 +518,14 @@ We have built a FastAPI application that provides endpoints for some sparse hays
 The list is yet extensive and covers almost all possible NLP search usage. 
 
 
-#### Useful **haystack** links
+#### Useful **Haystack** links
 
 - Open an issue [here](https://github.com/deepset-ai/haystack/issues). 
 - Read the [docs](https://haystack.deepset.ai/overview/intro).
 - Join the [newsletter](https://haystack.deepset.ai/community/join)
 - Join the [Discord server](https://discord.com/invite/VBpFzsgRVF).
 
-I'm always around haystack on Discord. So I'll be pleased to talk there.
+I'm always around Haystack on Discord. So I'll be pleased to talk there.
 
 
 
