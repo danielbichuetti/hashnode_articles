@@ -1,4 +1,4 @@
-## NLP endpoints: Haystack plus FastAPI
+# NLP endpoints: Haystack plus FastAPI
 
 
 
