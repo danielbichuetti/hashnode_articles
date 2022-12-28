@@ -1,4 +1,4 @@
-## Serverless Web API with Azure Function v4 and CosmosDB
+# Serverless Web API with Azure Function v4 and CosmosDB
 
 Today we will together build our first serverless Web API using Azure Functions v4 and CosmosDB as a serverless database.
 
